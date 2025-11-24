@@ -29,6 +29,7 @@ class SwiftOptions {
     this.fileSpecificClassNameComponent,
     this.errorClassName,
     this.includeErrorClass = true,
+    this.publicApi = false,
   });
 
   /// A copyright header that will get prepended to generated code.
@@ -46,6 +47,11 @@ class SwiftOptions {
   /// Swift file in the same directory.
   final bool includeErrorClass;
 
+  /// Whether generated types and protocols should be public
+  ///
+  /// Only set this to true if you control all consumers of the API
+  final bool publicApi;
+
   /// Creates a [SwiftOptions] from a Map representation where:
   /// `x = SwiftOptions.fromList(x.toMap())`.
   static SwiftOptions fromList(Map<String, Object> map) {
@@ -55,6 +61,7 @@ class SwiftOptions {
           map['fileSpecificClassNameComponent'] as String?,
       errorClassName: map['errorClassName'] as String?,
       includeErrorClass: map['includeErrorClass'] as bool? ?? true,
+      publicApi: map['publicApi'] as bool? ?? false,
     );
   }
 
@@ -67,6 +74,7 @@ class SwiftOptions {
         'fileSpecificClassNameComponent': fileSpecificClassNameComponent!,
       if (errorClassName != null) 'errorClassName': errorClassName!,
       'includeErrorClass': includeErrorClass,
+      'publicApi': publicApi,
     };
     return result;
   }
@@ -87,6 +95,7 @@ class InternalSwiftOptions extends InternalOptions {
     this.fileSpecificClassNameComponent,
     this.errorClassName,
     this.includeErrorClass = true,
+    this.publicApi = false,
   });
 
   /// Creates InternalSwiftOptions from SwiftOptions.
@@ -100,7 +109,8 @@ class InternalSwiftOptions extends InternalOptions {
            swiftOut.split('/').lastOrNull?.split('.').firstOrNull ??
            '',
        errorClassName = options.errorClassName,
-       includeErrorClass = options.includeErrorClass;
+       includeErrorClass = options.includeErrorClass,
+       publicApi = options.publicApi;
 
   /// A copyright header that will get prepended to generated code.
   final Iterable<String>? copyrightHeader;
@@ -119,6 +129,11 @@ class InternalSwiftOptions extends InternalOptions {
   /// This should only ever be set to false if you have another generated
   /// Swift file in the same directory.
   final bool includeErrorClass;
+
+  /// Whether generated types and protocols should be public
+  ///
+  /// Only set this to true if you control all consumers of the API
+  final bool publicApi;
 }
 
 /// Options that control how Swift code will be generated for a specific
@@ -238,6 +253,9 @@ class SwiftGenerator extends StructuredGenerator<InternalSwiftOptions> {
       _docCommentSpec,
     );
 
+    if (generatorOptions.publicApi) {
+      indent.write('public ');
+    }
     indent.write('enum ${anEnum.name}: Int ');
     indent.addScoped('{', '}', () {
       enumerate(anEnum.members, (int index, final EnumMember member) {
@@ -414,12 +432,17 @@ class SwiftGenerator extends StructuredGenerator<InternalSwiftOptions> {
   }
 
   void _writeDataClassSignature(
+    InternalSwiftOptions generatorOptions,
     Indent indent,
     Class classDefinition, {
     bool private = false,
     bool hashable = true,
   }) {
-    final privateString = private ? 'private ' : '';
+    final privateString = private
+        ? 'private '
+        : generatorOptions.publicApi
+          ? 'public '
+          : '';
     final extendsString = classDefinition.superClass != null
         ? ': ${classDefinition.superClass!.name}'
         : hashable
@@ -481,6 +504,7 @@ class SwiftGenerator extends StructuredGenerator<InternalSwiftOptions> {
     );
     indent.newln();
     _writeDataClassSignature(
+      generatorOptions,
       indent,
       overflowClass,
       private: true,
@@ -566,7 +590,7 @@ if (wrapped == nil) {
       _docCommentSpec,
       generatorComments: generatedComments,
     );
-    _writeDataClassSignature(indent, classDefinition);
+    _writeDataClassSignature(generatorOptions, indent, classDefinition);
     indent.writeScoped('', '}', () {
       if (classDefinition.isSealed) {
         return;
@@ -805,6 +829,9 @@ if (wrapped == nil) {
       }
     });
 
+    if (generatorOptions.publicApi) {
+      indent.write('public ');
+    }
     indent.write('class ${api.name}: ${api.name}Protocol ');
     indent.addScoped('{', '}', () {
       indent.writeln('private let binaryMessenger: FlutterBinaryMessenger');
@@ -869,6 +896,9 @@ if (wrapped == nil) {
       generatorComments: generatedComments,
     );
 
+    if (generatorOptions.publicApi) {
+      indent.write('public ');
+    }
     indent.write('protocol $apiName ');
     indent.addScoped('{', '}', () {
       for (final Method method in api.methods) {
@@ -894,6 +924,9 @@ if (wrapped == nil) {
     indent.writeln(
       '$_docCommentPrefix Generated setup class from Pigeon to handle messages through the `binaryMessenger`.',
     );
+    if (generatorOptions.publicApi) {
+      indent.write('public ');
+    }
     indent.write('class ${apiName}Setup ');
     indent.addScoped('{', '}', () {
       indent.writeln(
@@ -2741,6 +2774,9 @@ func deepHash${generatorOptions.fileSpecificClassNameComponent}(value: Any?, has
     indent.writeln(
       '/// Error class for passing custom error details to Dart side.',
     );
+    if (generatorOptions.publicApi) {
+      indent.write('public ');
+    }
     indent.writeScoped(
       'final class ${_getErrorClassName(generatorOptions)}: Error {',
       '}',
@@ -2809,6 +2845,7 @@ func deepHash${generatorOptions.fileSpecificClassNameComponent}(value: Any?, has
 }
 
 typedef _VersionRequirement = ({TypeDeclaration type, Version version});
+
 ({_VersionRequirement? ios, _VersionRequirement? macos})
 _findHighestVersionRequirement(Iterable<TypeDeclaration> types) {
   final _VersionRequirement? iosApiRequirement =
