@@ -681,6 +681,9 @@ if (wrapped == nil) {
     Class classDefinition, {
     required String dartPackageName,
   }) {
+    if (generatorOptions.publicApi) {
+      indent.write('public ');
+    }
     indent.writeScoped(
       'static func == (lhs: ${classDefinition.name}, rhs: ${classDefinition.name}) -> Bool {',
       '}',
@@ -696,6 +699,9 @@ if (wrapped == nil) {
       },
     );
 
+    if (generatorOptions.publicApi) {
+      indent.write('public ');
+    }
     indent.writeScoped('func hash(into hasher: inout Hasher) {', '}', () {
       indent.writeln(
         'deepHash${generatorOptions.fileSpecificClassNameComponent}(value: toList(), hasher: &hasher)',
