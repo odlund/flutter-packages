@@ -441,8 +441,8 @@ class SwiftGenerator extends StructuredGenerator<InternalSwiftOptions> {
     final privateString = private
         ? 'private '
         : generatorOptions.publicApi
-          ? 'public '
-          : '';
+        ? 'public '
+        : '';
     final extendsString = classDefinition.superClass != null
         ? ': ${classDefinition.superClass!.name}'
         : hashable
@@ -478,6 +478,14 @@ class SwiftGenerator extends StructuredGenerator<InternalSwiftOptions> {
         indent.write('var ');
         _writeClassField(indent, field, addNil: !classDefinition.isSwiftClass);
         indent.newln();
+      }
+
+      if (!classDefinition.isSwiftClass &&
+          !classDefinition.isSealed &&
+          !private &&
+          generatorOptions.publicApi) {
+        indent.newln();
+        _writeClassInit(indent, fields.toList(), public: true);
       }
     }, addTrailingNewline: false);
   }
@@ -620,8 +628,13 @@ if (wrapped == nil) {
     });
   }
 
-  void _writeClassInit(Indent indent, List<NamedType> fields) {
-    indent.writeScoped('init(', ')', () {
+  void _writeClassInit(
+    Indent indent,
+    List<NamedType> fields, {
+    bool public = false,
+  }) {
+    final String publicStr = public ? 'public ' : '';
+    indent.writeScoped('${publicStr}init(', ')', () {
       for (var i = 0; i < fields.length; i++) {
         indent.write('');
         _writeClassField(indent, fields[i]);
