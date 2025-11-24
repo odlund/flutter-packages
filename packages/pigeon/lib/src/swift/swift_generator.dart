@@ -925,9 +925,6 @@ if (wrapped == nil) {
     indent.writeln(
       '$_docCommentPrefix Generated setup class from Pigeon to handle messages through the `binaryMessenger`.',
     );
-    if (generatorOptions.publicApi) {
-      indent.write('public ');
-    }
     indent.write('class ${apiName}Setup ');
     indent.addScoped('{', '}', () {
       indent.writeln(
