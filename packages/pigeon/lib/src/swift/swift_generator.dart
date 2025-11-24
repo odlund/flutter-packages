@@ -843,15 +843,13 @@ if (wrapped == nil) {
       }
     });
 
-    if (generatorOptions.publicApi) {
-      indent.write('public ');
-    }
-    indent.write('class ${api.name}: ${api.name}Protocol ');
+    final String publicStr = generatorOptions.publicApi? 'public ' : '';
+    indent.write('${publicStr}class ${api.name}: ${api.name}Protocol ');
     indent.addScoped('{', '}', () {
       indent.writeln('private let binaryMessenger: FlutterBinaryMessenger');
       indent.writeln('private let messageChannelSuffix: String');
       indent.write(
-        'init(binaryMessenger: FlutterBinaryMessenger, messageChannelSuffix: String = "") ',
+        '${publicStr}init(binaryMessenger: FlutterBinaryMessenger, messageChannelSuffix: String = "") ',
       );
       indent.addScoped('{', '}', () {
         indent.writeln('self.binaryMessenger = binaryMessenger');
@@ -2785,11 +2783,10 @@ func deepHash${generatorOptions.fileSpecificClassNameComponent}(value: Any?, has
     indent.writeln(
       '/// Error class for passing custom error details to Dart side.',
     );
-    if (generatorOptions.publicApi) {
-      indent.write('public ');
-    }
+    final String publicStr = generatorOptions.publicApi ? 'public ' : '';
+
     indent.writeScoped(
-      'final class ${_getErrorClassName(generatorOptions)}: Error {',
+      '${publicStr}final class ${_getErrorClassName(generatorOptions)}: Error {',
       '}',
       () {
         indent.writeln('let code: String');
@@ -2797,7 +2794,7 @@ func deepHash${generatorOptions.fileSpecificClassNameComponent}(value: Any?, has
         indent.writeln('let details: Sendable?');
         indent.newln();
         indent.writeScoped(
-          'init(code: String, message: String?, details: Sendable?) {',
+          '${publicStr}init(code: String, message: String?, details: Sendable?) {',
           '}',
           () {
             indent.writeln('self.code = code');
