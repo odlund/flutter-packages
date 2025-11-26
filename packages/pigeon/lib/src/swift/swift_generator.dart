@@ -897,6 +897,7 @@ if (wrapped == nil) {
     required String dartPackageName,
   }) {
     final String apiName = api.name;
+    final String publicStr = generatorOptions.publicApi ? 'public ' : '';
 
     const generatedComments = <String>[
       ' Generated protocol from Pigeon that represents a handler of messages from Flutter.',
@@ -908,10 +909,7 @@ if (wrapped == nil) {
       generatorComments: generatedComments,
     );
 
-    if (generatorOptions.publicApi) {
-      indent.write('public ');
-    }
-    indent.write('protocol $apiName ');
+    indent.write('${publicStr}protocol $apiName ');
     indent.addScoped('{', '}', () {
       for (final Method method in api.methods) {
         addDocumentationComments(
@@ -936,7 +934,7 @@ if (wrapped == nil) {
     indent.writeln(
       '$_docCommentPrefix Generated setup class from Pigeon to handle messages through the `binaryMessenger`.',
     );
-    indent.write('class ${apiName}Setup ');
+    indent.write('${publicStr}class ${apiName}Setup ');
     indent.addScoped('{', '}', () {
       indent.writeln(
         'static var codec: FlutterStandardMessageCodec { ${_getMessageCodecName(generatorOptions)}.shared }',
@@ -945,7 +943,7 @@ if (wrapped == nil) {
         '$_docCommentPrefix Sets up an instance of `$apiName` to handle messages through the `binaryMessenger`.',
       );
       indent.write(
-        'static func setUp(binaryMessenger: FlutterBinaryMessenger, api: $apiName?, messageChannelSuffix: String = "") ',
+        '${publicStr}static func setUp(binaryMessenger: FlutterBinaryMessenger, api: $apiName?, messageChannelSuffix: String = "") ',
       );
       indent.addScoped('{', '}', () {
         indent.writeln(
