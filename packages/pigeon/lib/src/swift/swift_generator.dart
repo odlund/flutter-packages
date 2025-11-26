@@ -1719,7 +1719,8 @@ func deepHash${generatorOptions.fileSpecificClassNameComponent}(value: Any?, has
       getParameterName: _getSafeArgumentName,
     );
 
-    indent.writeScoped('$methodSignature {', '}', () {
+    final String publicStr = generatorOptions.publicApi ? 'public ' : '';
+    indent.writeScoped('$publicStr$methodSignature {', '}', () {
       _writeFlutterMethodMessageCall(
         indent,
         generatorOptions: generatorOptions,
